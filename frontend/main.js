@@ -8,7 +8,7 @@ window.onload = () => {
 
 document.getElementById("submit").addEventListener("click", () => {
   const valeu = document.getElementById("input").value;
-  fetch("http://localhost:3000/python", {
+  fetch("https://riyosh.herokuapp.com/python", {
     method: "post",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ code: editor.getValue(), input: valeu })
