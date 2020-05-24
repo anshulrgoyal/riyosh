@@ -1,5 +1,5 @@
 const app = require("express")();
-const { c,cpp } = require("compile-run");
+const { c,cpp,python,node } = require("compile-run");
 const bodyParser = require("body-parser");
 const Share = require("./link")
 const crypto=require('crypto')
@@ -34,6 +34,32 @@ app.post("/cpp", (req, res) => {
     });
 });
 
+app.post("/python", (req, res) => {
+  const { code, input = "" } = req.body;
+  let resultPromise = python.runSource(code, { stdin: `${input}\n` });
+  resultPromise
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+app.post("/node", (req, res) => {
+  const { code, input = "" } = req.body;
+  let resultPromise = node.runSource(code, { stdin: `${input}\n` });
+  resultPromise
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+
+
 app.post("/save",async (req,res)=>{
   const { code, input = "" ,language="c"} = req.body;
   let link=await Share.create({code,language,shortId:crypto.randomBytes(8).toString("hex")})
@@ -44,5 +70,7 @@ app.get("/:id",async (req,res)=>{
   let data=await Share.findOne({shortId:req.param.id})
   res.json(data.toObject())
 })
+
+
 
 app.listen(3000);
