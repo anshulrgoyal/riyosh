@@ -1,15 +1,21 @@
-const app = require("express")();
-const { c,cpp,python,node } = require("compile-run");
+const express = require("express")
+const app = express();
+const { c, cpp, python, node } = require("compile-run");
 const bodyParser = require("body-parser");
 const Share = require("./link")
-const crypto=require('crypto')
-const mongoose=require('mongoose')
+const crypto = require('crypto')
+const mongoose = require('mongoose')
 
-mongoose.connect("mongodb+srv://anshul:maqOEfK6ZbvePCTF@cluster0-mygnl.mongodb.net/test?retryWrites=true&w=majority",{useNewUrlParser:true})
+mongoose.connect("mongodb+srv://anshul:maqOEfK6ZbvePCTF@cluster0-mygnl.mongodb.net/test?retryWrites=true&w=majority", { useNewUrlParser: true })
 
 app.use(bodyParser.json());
 app.use(require("cors")());
 
+app.use(express.static(__dirname + "/frontend"))
+
+app.get("*", (req, res) => {
+  res.sendFile(__dirname + "/frontend/index.html")
+})
 app.post("/c", (req, res) => {
   const { code, input = "" } = req.body;
   let resultPromise = c.runSource(code, { stdin: `${input}\n` });
@@ -60,17 +66,17 @@ app.post("/node", (req, res) => {
 
 
 
-app.post("/save",async (req,res)=>{
-  const { code, input = "" ,language="c"} = req.body;
-  let link=await Share.create({code,language,shortId:crypto.randomBytes(8).toString("hex")})
+app.post("/save", async (req, res) => {
+  const { code, input = "", language = "c" } = req.body;
+  let link = await Share.create({ code, language, shortId: crypto.randomBytes(8).toString("hex") })
   req.json(link.toObject())
 })
 
-app.get("/:id",async (req,res)=>{
-  let data=await Share.findOne({shortId:req.param.id})
+app.get("/:id", async (req, res) => {
+  let data = await Share.findOne({ shortId: req.param.id })
   res.json(data.toObject())
 })
 
 
 
-app.listen(process.env.PORT);
+app.listen(process.env.PORT || 3000);
