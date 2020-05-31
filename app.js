@@ -13,9 +13,6 @@ app.use(require("cors")());
 
 app.use(express.static(__dirname + "/frontend"))
 
-app.get("*", (req, res) => {
-  res.sendFile(__dirname + "/frontend/index.html")
-})
 app.post("/c", (req, res) => {
   const { code, input = "" } = req.body;
   let resultPromise = c.runSource(code, { stdin: `${input}\n` });
@@ -68,15 +65,17 @@ app.post("/node", (req, res) => {
 
 app.post("/save", async (req, res) => {
   const { code, input = "", language = "c" } = req.body;
-  let link = await Share.create({ code, language, shortId: crypto.randomBytes(8).toString("hex") })
-  req.json(link.toObject())
+  let link = await (await Share.create({ code, language, shortId: crypto.randomBytes(8).toString("hex") })).save()
+  res.json(link.toObject())
 })
 
-app.get("/:id", async (req, res) => {
-  let data = await Share.findOne({ shortId: req.param.id })
+app.get("/share/:id", async (req, res) => {
+  let data = await Share.findOne({ shortId: req.params.id })
   res.json(data.toObject())
 })
 
-
+app.get("*", (req, res) => {
+  res.sendFile(__dirname + "/frontend/index.html")
+})
 
 app.listen(process.env.PORT || 3000);
